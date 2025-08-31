@@ -1,10 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-// import HomePage from '../components/HelloWorld.vue'
 import ErrorPage from '../components/ErrorPage.vue'
-import TestBar from '../views/TestPage.vue'
-
+import HomePage from '../views/LandingPage.vue'
 
 Vue.use(Router)
 
@@ -12,7 +10,7 @@ const routes = [
   {
     name: "home",
     path: "/",
-    component: TestBar,
+    component: HomePage,
   },
   {
     name: "error",
