@@ -9,6 +9,7 @@
                 <v-divider class="mx-6 mb-8"></v-divider>
                 <DishesSlider :title="'Popular Pizza'" :item="'pizza'" />
                 <v-divider class="mx-6 mb-8"></v-divider>
+                <OnDemand />
             </v-main>
         </div>
     </v-app>
@@ -16,9 +17,10 @@
 
 <script>
 import DishesSlider from '../components/DishesSlider.vue';
+import OnDemand from '@/components/OnDemand.vue';
 
 export default {
-    components: { DishesSlider },
+    components: { DishesSlider, OnDemand },
     mounted() {
         const emojis = ["🍕", "🍔", "🍛", "🥗", "🍜", "🍩", "🍣"];
         const grid = document.querySelector(".emoji-grid");

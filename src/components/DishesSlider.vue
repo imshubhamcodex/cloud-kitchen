@@ -1,9 +1,9 @@
 <template>
     <v-container fluid>
-        <h3 class="text-left ml-3">{{ title }}</h3>
+        <h3 class="text-left text_title">{{ title }}</h3>
 
         <!-- Dish slider -->
-        <v-slide-group show-arrows class="my-4 pl-10 pr-10" mandatory>
+        <v-slide-group show-arrows class="my-4 " mandatory>
             <template v-slot:prev>
                 <v-btn icon small class="arrow-btn">
                     <v-icon small>mdi-chevron-left</v-icon>
@@ -103,8 +103,8 @@
 
                     <v-divider></v-divider>
 
-                    <v-card-actions>
-                        <div class="text-subtitle-1 pb-2 pt-2 pl-3 mb-2" style="font-weight: 500;">
+                    <v-card-actions class="bottom_action">
+                        <div class="text-subtitle-1 pb-2 pt-4 pl-3 mb-2" style="font-weight: 500;">
                             Total: ₹ {{ totalPrice }}
                         </div>
                         <v-spacer></v-spacer>
@@ -173,7 +173,11 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+.text_title {
+    margin-left: 30px;
+}
+
 .arrow-btn {
     height: 32px;
     width: 32px;
@@ -186,22 +190,39 @@ export default {
     max-width: 240px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 500px) {
     .dish-card {
         max-width: 180px;
     }
 
     .dish-title {
-        font-size: 14px;
+        font-size: 17px;
     }
 
     .dish-desc {
-        font-size: 12px;
+        font-size: 15px;
     }
 
     .arrow-btn {
-        height: 28px;
-        width: 28px;
+        display: none;
+    }
+
+    .v-slide-group__prev,
+    .v-slide-group__next {
+        display: none !important;
+    }
+
+    .dish-card {
+        zoom: 0.7 !important;
+    }
+
+    .text_title {
+        font-size: 18px !important;
+        margin-left: 0px !important;
+    }
+
+    .bottom_action {
+        zoom: 0.9;
     }
 }
 </style>

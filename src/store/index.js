@@ -126,12 +126,17 @@ export default new Vuex.Store({
         ADD_TO_CART(state, dish) {
             const cartItem = {
                 ...dish,
-                extras: dish.extras.filter(e => e.selected),
-                add_ons: state.add_ons.filter(a => a.selected),
-                pickupTime: null // initialize pickupTime as null
+                extras: dish.extras
+                    .filter(e => e.selected)
+                    .map(e => ({ ...e, quantity: 1 })),  // Add quantity for extras
+                add_ons: state.add_ons
+                    .filter(a => a.selected)
+                    .map(a => ({ ...a, quantity: 1 })),  // Add quantity for add-ons
+                pickupTime: null,
+                quantity: 1  // Main dish quantity
             }
             state.cart.push(cartItem)
-            console.log('Cart:', state.cart)
+
             // Reset selected flags
             dish.extras.forEach(e => e.selected = false)
             state.add_ons.forEach(a => a.selected = false)
@@ -139,7 +144,29 @@ export default new Vuex.Store({
         },
         REMOVE_FROM_CART(state, id) {
             state.cart.splice(id, 1)
+        },
+        INCREASE_EXTRA_QTY(state, { cartIndex, extraIndex }) {
+            state.cart[cartIndex].extras[extraIndex].quantity++
+        },
+        DECREASE_EXTRA_QTY(state, { cartIndex, extraIndex }) {
+            if (state.cart[cartIndex].extras[extraIndex].quantity > 1)
+                state.cart[cartIndex].extras[extraIndex].quantity--
+        },
+        INCREASE_ADDON_QTY(state, { cartIndex, addOnIndex }) {
+            state.cart[cartIndex].add_ons[addOnIndex].quantity++
+        },
+        DECREASE_ADDON_QTY(state, { cartIndex, addOnIndex }) {
+            if (state.cart[cartIndex].add_ons[addOnIndex].quantity > 1)
+                state.cart[cartIndex].add_ons[addOnIndex].quantity--
+        },
+        INCREASE_DISH_QTY(state, cartIndex) {
+            state.cart[cartIndex].quantity++
+        },
+        DECREASE_DISH_QTY(state, cartIndex) {
+            if (state.cart[cartIndex].quantity > 1)
+                state.cart[cartIndex].quantity--
         }
+
     },
     actions: {
         selectDish({ commit }, dish) {
