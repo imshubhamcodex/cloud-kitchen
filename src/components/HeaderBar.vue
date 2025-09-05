@@ -34,7 +34,9 @@
       <v-btn icon outlined>
         <v-icon>mdi-account</v-icon>
       </v-btn>
-      <v-btn class="signin-btn" color="primary" rounded text>Sign in</v-btn>
+      <v-btn class="signin-btn" color="primary" rounded text @click="signInDialog = true">
+        Sign In
+      </v-btn>
     </v-app-bar>
 
     <!-- Dialog -->
@@ -124,14 +126,33 @@
                   </v-list>
                 </div>
 
-                <div>
-                  <strong>Pickup Time:</strong>
-                  <v-chip-group v-model="item.pickupTime" active-class="deep-purple accent-2 white--text" column>
-                    <v-chip v-for="time in item.avail" :key="time" :value="time">
-                      {{ time }}
-                    </v-chip>
-                  </v-chip-group>
+                <!-- Pickup Date & Time -->
+                <div class="d-flex align-center mb-4 justify-space-between pl-10">
+                  <strong class="mr-3">Pickup Date & Time:</strong>
+                  <v-menu v-model="item.pickupMenu" :close-on-content-click="false" transition="scale-transition"
+                    offset-y min-width="250px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field dense outlined class="mt-4" v-model="item.pickupDateTime" label="Select Date & Time"
+                        readonly v-bind="attrs" v-on="on" style="max-width: 160px;"></v-text-field>
+                    </template>
+
+                    <v-card style="zoom: 0.8;">
+                      <!-- Date Picker -->
+                      <v-date-picker v-model="item.pickupDate" :min="minDate" no-title scrollable></v-date-picker>
+
+                      <!-- Time Picker -->
+                      <v-time-picker v-model="item.pickupTime" format="24hr"
+                        :allowed-hours="hour => allowedHours(hour, item)"
+                        :allowed-minutes="minute => allowedMinutes(minute, item)" />
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn text color="primary" @click="item.pickupMenu = false">OK</v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-menu>
                 </div>
+
 
                 <div>
                   <v-divider class="mt-5"></v-divider>
@@ -151,8 +172,6 @@
         </v-card-text>
       </v-card>
     </v-dialog>
-
-
 
     <!-- Search Result Dialog -->
     <v-dialog v-model="searchDialog" max-width="900">
@@ -176,6 +195,37 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Sign In Dialog -->
+    <v-dialog persistent v-model="signInDialog" max-width="400px">
+      <v-card>
+        <v-card-title class="headline grey lighten-2">
+          Sign In
+          <v-spacer></v-spacer>
+          <v-btn icon @click="signInDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text class="pt-5">
+          <v-form ref="signInForm" v-model="validSignIn">
+            <v-text-field v-model="email" label="Email" type="email" :rules="[signInRules.required, signInRules.email]"
+              required outlined dense clearable></v-text-field>
+
+            <v-text-field v-model="password" label="Password" type="password"
+              :rules="[signInRules.required, signInRules.min]" required outlined dense clearable></v-text-field>
+          </v-form>
+
+          <v-spacer></v-spacer>
+          <div class="d-flex justify-end mt-0">
+            <v-btn text color="red" @click="signInDialog = false">Cancel</v-btn>
+            <v-btn text color="green" @click="submitSignIn" :disabled="!validSignIn">Sign In</v-btn>
+          </div>
+
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
   </div>
 
 </template>
@@ -194,6 +244,19 @@ export default {
       dialog: false,
       searchDialog: false,
       selectedItem: null,
+      minDate: new Date().toISOString().substr(0, 10),
+      signInDialog: false,
+      email: '',
+      password: '',
+      validSignIn: false,
+      signInRules: {
+        required: value => !!value || 'Required.',
+        email: value => {
+          const pattern = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/
+          return pattern.test(value) || 'Invalid e-mail.'
+        },
+        min: value => (value && value.length >= 6) || 'Min 6 characters'
+      },
     }
   },
   computed: {
@@ -212,6 +275,39 @@ export default {
     }
   },
   methods: {
+    submitSignIn() {
+      if (this.$refs.signInForm.validate()) {
+        // Implement actual login logic here
+        alert(`Signing in with: ${this.email}`);
+        this.signInDialog = false;
+        this.email = '';
+        this.password = '';
+      }
+    },
+    allowedHours(hour, item) {
+      const now = new Date();
+      const selectedDate = new Date(item.pickupDate);
+      let minHour = 12;
+
+      if (selectedDate.toDateString() === now.toDateString()) {
+        minHour = now.getHours() + 1;
+        if (minHour < 12) minHour = 12;
+      }
+
+      return hour >= minHour && hour <= 20; // max 8 PM
+    },
+    allowedMinutes(minute, item) {
+      const now = new Date();
+      const selectedDate = new Date(item.pickupDate);
+
+      if (
+        selectedDate.toDateString() === now.toDateString() &&
+        parseInt(item.pickupTime?.split(':')[0]) === now.getHours() + 1
+      ) {
+        return minute >= now.getMinutes();
+      }
+      return true;
+    },
     truncate(text) {
       if (window.innerWidth <= 500) {
         if (window.innerWidth <= 400) {
@@ -263,6 +359,17 @@ export default {
   watch: {
     scrollY(newVal) {
       this.elevation = newVal > 0 ? 2 : 0
+    },
+
+    cart: {
+      handler(newCart) {
+        newCart.forEach(item => {
+          if (item.pickupDate && item.pickupTime) {
+            item.pickupDateTime = `${item.pickupDate} ${item.pickupTime}`
+          }
+        })
+      },
+      deep: true
     }
   }
 }

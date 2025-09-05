@@ -128,12 +128,15 @@ export default new Vuex.Store({
                 ...dish,
                 extras: dish.extras
                     .filter(e => e.selected)
-                    .map(e => ({ ...e, quantity: 1 })),  // Add quantity for extras
+                    .map(e => ({ ...e, quantity: 1 })),
                 add_ons: state.add_ons
                     .filter(a => a.selected)
-                    .map(a => ({ ...a, quantity: 1 })),  // Add quantity for add-ons
-                pickupTime: null,
-                quantity: 1  // Main dish quantity
+                    .map(a => ({ ...a, quantity: 1 })),
+                pickupMenu: false,      // for v-menu open/close
+                pickupDate: null,       // selected date
+                pickupTime: null,       // selected time
+                pickupDateTime: '',     // combined date + time for display
+                quantity: 1
             }
             state.cart.push(cartItem)
 
