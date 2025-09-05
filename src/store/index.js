@@ -101,13 +101,16 @@ export default new Vuex.Store({
             { id: 205, name: 'Water Bottle (1L)', qnt: 1000, price: 20, type: 'beverage', selected: false }
         ],
         selectedDish: null,
-        cart: []
+        cart: [],
+        currentUser: null
     },
     getters: {
         dishes: state => state.dishes,
         addOns: state => state.add_ons,
         selectedDish: state => state.selectedDish,
-        cart: state => state.cart
+        cart: state => state.cart,
+        currentUser: state => state.currentUser,
+        isAuthenticated: state => !!state.currentUser
     },
     mutations: {
         SET_SELECTED_DISH(state, dish) {
@@ -168,6 +171,12 @@ export default new Vuex.Store({
         DECREASE_DISH_QTY(state, cartIndex) {
             if (state.cart[cartIndex].quantity > 1)
                 state.cart[cartIndex].quantity--
+        },
+        SET_USER(state, user) {
+            state.currentUser = user;
+        },
+        CLEAR_USER(state) {
+            state.currentUser = null;
         }
 
     },

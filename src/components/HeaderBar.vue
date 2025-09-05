@@ -34,9 +34,15 @@
       <v-btn icon outlined>
         <v-icon>mdi-account</v-icon>
       </v-btn>
-      <v-btn class="signin-btn" color="primary" rounded text @click="signInDialog = true">
+      <!-- Replace the Sign In button -->
+      <v-btn v-if="!currentUser" class="signin-btn" color="primary" rounded text @click="signInDialog = true">
         Sign In
       </v-btn>
+
+      <v-btn v-else class="signin-btn" color="red" rounded text @click="logout">
+        Logout
+      </v-btn>
+
     </v-app-bar>
 
     <!-- Dialog -->
@@ -200,7 +206,7 @@
     <v-dialog persistent v-model="signInDialog" max-width="400px">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          Sign In
+          {{ authMode === 'signIn' ? 'Sign In' : 'Create Account' }}
           <v-spacer></v-spacer>
           <v-btn icon @click="signInDialog = false">
             <v-icon>mdi-close</v-icon>
@@ -208,23 +214,42 @@
         </v-card-title>
 
         <v-card-text class="pt-5">
-          <v-form ref="signInForm" v-model="validSignIn">
+          <v-form ref="authForm" v-model="validSignIn">
+            <!-- Name & Phone Only in Sign Up Mode -->
+            <v-text-field v-if="authMode === 'signUp'" v-model="name" label="Full Name" :rules="[signInRules.required]"
+              required outlined dense clearable></v-text-field>
+
+            <v-text-field v-if="authMode === 'signUp'" v-model="phone" label="Phone Number" type="tel"
+              :rules="signInRules.phoneRule" required outlined dense clearable></v-text-field>
+
             <v-text-field v-model="email" label="Email" type="email" :rules="[signInRules.required, signInRules.email]"
               required outlined dense clearable></v-text-field>
 
-            <v-text-field v-model="password" label="Password" type="password"
+            <v-text-field v-model="password" label="Password" :type="showPassword ? 'text' : 'password'"
+              :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'" @click:append="showPassword = !showPassword"
               :rules="[signInRules.required, signInRules.min]" required outlined dense clearable></v-text-field>
           </v-form>
 
-          <v-spacer></v-spacer>
-          <div class="d-flex justify-end mt-0">
-            <v-btn text color="red" @click="signInDialog = false">Cancel</v-btn>
-            <v-btn text color="green" @click="submitSignIn" :disabled="!validSignIn">Sign In</v-btn>
+          <div class="mt-2">
+            <span v-if="authMode === 'signIn'">Don't have an account?
+              <a href="#" @click.prevent="toggleAuthMode">Sign Up</a>
+            </span>
+            <span v-else>Already have an account?
+              <a href="#" @click.prevent="toggleAuthMode">Sign In</a>
+            </span>
           </div>
 
+          <v-spacer></v-spacer>
+          <div class="d-flex justify-end mt-2">
+            <v-btn text color="red" @click="signInDialog = false">Cancel</v-btn>
+            <v-btn text color="green" @click="submitAuth" :disabled="!validSignIn">
+              {{ authMode === 'signIn' ? 'Sign In' : 'Sign Up' }}
+            </v-btn>
+          </div>
         </v-card-text>
       </v-card>
     </v-dialog>
+
 
   </div>
 
@@ -232,6 +257,8 @@
 
 <script>
 import DishesSlider from './DishesSlider.vue'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from '@/firebase';
 export default {
   name: 'HeaderBar',
   components: { DishesSlider },
@@ -246,20 +273,34 @@ export default {
       selectedItem: null,
       minDate: new Date().toISOString().substr(0, 10),
       signInDialog: false,
+      name: '',
+      phone: '',
       email: '',
       password: '',
       validSignIn: false,
+      showPassword: false,
+      authMode: 'signIn', // or 'signUp'
       signInRules: {
         required: value => !!value || 'Required.',
         email: value => {
           const pattern = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/
           return pattern.test(value) || 'Invalid e-mail.'
         },
-        min: value => (value && value.length >= 6) || 'Min 6 characters'
+        min: value => (value && value.length >= 6) || 'Min 6 characters',
+        phoneRule: [
+          v => !!v || 'Phone number is required.',
+          v => /^[6-9]\d{9}$/.test(v) || 'Enter a valid 10-digit Indian phone number starting with 6-9.'
+        ]
       },
     }
   },
   computed: {
+    isAuthenticated() {
+      return this.$store.getters.isAuthenticated;
+    },
+    currentUser() {
+      return this.$store.getters.currentUser;
+    },
     cart() {
       return this.$store.getters.cart
     },
@@ -275,14 +316,50 @@ export default {
     }
   },
   methods: {
-    submitSignIn() {
-      if (this.$refs.signInForm.validate()) {
-        // Implement actual login logic here
-        alert(`Signing in with: ${this.email}`);
-        this.signInDialog = false;
-        this.email = '';
-        this.password = '';
+    async logout() {
+      try {
+        await signOut(auth);
+        this.currentUser = null;
+        this.$store.commit('CLEAR_USER');
+        alert("Logged out successfully!");
+      } catch (error) {
+        alert(error.message);
       }
+    },
+    async submitAuth() {
+      if (this.authMode === 'signIn') {
+        // Sign In Logic
+        if (!this.$refs.authForm.validate()) return;
+
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
+          this.currentUser = userCredential.user;
+          alert(`Signed in as ${this.currentUser.email}`);
+          this.signInDialog = false;
+          this.email = '';
+          this.password = '';
+        } catch (error) {
+          alert(error.message);
+        }
+
+      } else {
+        // Sign Up Logic
+        if (!this.$refs.authForm.validate()) return;
+
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
+          this.currentUser = userCredential.user;
+          alert(`Account created for ${this.currentUser.email}`);
+          this.signInDialog = false;
+          this.email = '';
+          this.password = '';
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+    },
+    toggleAuthMode() {
+      this.authMode = this.authMode === 'signIn' ? 'signUp' : 'signIn';
     },
     allowedHours(hour, item) {
       const now = new Date();
@@ -354,7 +431,14 @@ export default {
   mounted() {
     window.addEventListener('scroll', () => {
       this.scrollY = window.scrollY
-    })
+    }),
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          this.$store.commit('SET_USER', user);
+        } else {
+          this.$store.commit('CLEAR_USER');
+        }
+      });
   },
   watch: {
     scrollY(newVal) {
