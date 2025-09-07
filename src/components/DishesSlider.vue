@@ -15,14 +15,22 @@
 
                 <v-slide-item v-for="dish in dishes" :key="dish.id">
                     <v-card class="mx-2 mb-5 dish-card" max-width="240">
-                        <v-img height="150" :src="dish.img"></v-img>
+                        <!-- Skeleton loader until image is loaded -->
+                        <div style="position: relative; height: 150px;">
+                            <v-skeleton-loader v-if="!imgLoaded" type="image" height="150"></v-skeleton-loader>
+                            <v-img :src="dish.img" height="150" @load="imgLoaded = true"
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></v-img>
+                        </div>
+
                         <v-card-title class="pb-0 pt-2 dish-title">
                             {{ dish.name }}
                             <span>
-                                <v-icon v-if="dish.type === 'veg'" small color="green"
-                                    class="text-caption pb-3 pl-1">mdi-square-circle</v-icon>
-                                <v-icon v-else small color="red"
-                                    class="text-caption pb-3 pl-1">mdi-format-wrap-square</v-icon>
+                                <v-icon v-if="dish.type === 'veg'" small color="green" class="text-caption pb-3 pl-1">
+                                    mdi-square-circle
+                                </v-icon>
+                                <v-icon v-else small color="red" class="text-caption pb-3 pl-1">
+                                    mdi-format-wrap-square
+                                </v-icon>
                             </span>
                         </v-card-title>
                         <v-card-text>
@@ -32,11 +40,12 @@
                         <v-card-actions class="pt-2">
                             <span class="text-h6 ml-2">₹ {{ dish.price }}</span>
                             <v-spacer></v-spacer>
-                            <v-btn style="width: 50%;" outlined rounded color="primary" text @click="orderPlace(dish)">
+                            <v-btn style="width: 50%;" rounded elevation="1" color="primary" @click="orderPlace(dish)">
                                 ADD+
                             </v-btn>
                         </v-card-actions>
                     </v-card>
+
                 </v-slide-item>
             </div>
             <template v-slot:next>
@@ -128,6 +137,7 @@ export default {
             dialog: false,
             snackbar: false,
             snackbarText: '',
+            imgLoaded: false,
         }
     },
     computed: {
@@ -170,6 +180,9 @@ export default {
             this.$store.commit('SET_SELECTED_DISH', null)
         },
     },
+    mounted() {
+        this.imgLoaded = false
+    }
 }
 </script>
 
@@ -185,11 +198,9 @@ export default {
     background: white;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.15);
 }
-
 .dish-card {
     max-width: 240px;
 }
-
 @media (max-width: 500px) {
     .dish-card {
         max-width: 180px;

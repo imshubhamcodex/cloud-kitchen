@@ -1,7 +1,7 @@
 <template>
   <div style="position: fixed; top:0; width: 100%; z-index: 1;">
     <v-app-bar color="#F9FBE7" light height="65" :elevation="elevation" class="pl-2 pr-2">
-      <img class="logo" src="../assets/logo.png" width="60" alt="Logo">
+      <img class="logo" src="../assets/logo.png" width="60" alt="Logo" @click="$router.push('/')">
 
       <v-toolbar-title>
         <h3 class="h1 mt-1 search_bar_header">Mom's Kitchen</h3>
@@ -31,36 +31,40 @@
 
       <div class="vertical-line"></div>
 
-      <v-btn icon outlined>
-        <v-icon>mdi-account</v-icon>
-      </v-btn>
       <!-- Replace the Sign In button -->
-      <v-btn v-if="!currentUser" class="signin-btn" color="primary" rounded text @click="signInDialog = true">
+      <v-btn v-if="!currentUser" class="signin-btn" color="primary" rounded outlined text @click="signInDialog = true">
         Sign In
       </v-btn>
 
-      <v-btn v-else class="signin-btn" color="red" rounded text @click="logout">
-        Logout
+
+      <v-btn v-else icon outlined @click="gotoProfile" class="signin-btn">
+        <v-icon>mdi-account</v-icon>
       </v-btn>
+
 
     </v-app-bar>
 
     <!-- Dialog -->
-    <v-dialog v-model="dialog" persistent max-width="550">
+    <v-dialog v-model="dialog" persistent max-width="650">
       <v-card>
         <v-card-title class="text-h6" style="background-color: #f5f5f5; font-weight: 500;">
           Cart Summary
           <v-spacer></v-spacer>
-          <v-btn icon @click="dialog = false">
+          <v-btn color="red darken-1" icon @click="dialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
         <v-divider></v-divider>
 
         <v-card-text class="px-0">
-          <div v-if="cart.length === 0">
-            <p class="text-center text-subtitle-2 mt-5">Your cart is empty.</p>
+          <div v-if="cart.length === 0" class="empty-cart d-flex flex-column align-center justify-center"
+            style="height: 200px;">
+            <v-avatar size="64" color="grey lighten-3">
+              <v-icon size="36">mdi-food</v-icon>
+            </v-avatar>
+            <p class="text-center text-subtitle-2 mt-4">Your cart is empty.</p>
           </div>
+
 
           <v-list v-else>
             <v-list-item v-for="(item, id) in cart" :key="id" class="mb-2">
@@ -73,7 +77,7 @@
                       <v-icon>mdi-minus</v-icon>
                     </v-btn>
                     <span class="mx-1">{{ item.quantity }}</span>
-                    <v-btn icon small class="mr-4" color="green" @click="increaseQty(item)">
+                    <v-btn icon small :class="isMobile ? 'mr-3' : 'mr-4'" color="green" @click="increaseQty(item)">
                       <v-icon>mdi-plus</v-icon>
                     </v-btn>
                     <v-btn icon small color="red" @click="removeFromCart(id)">
@@ -185,7 +189,7 @@
         <v-card-title>
           {{ selectedItem }}
           <v-spacer></v-spacer>
-          <v-btn icon @click="searchDialog = false">
+          <v-btn color="red darken-1" icon @click="searchDialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
@@ -197,7 +201,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="searchDialog = false">Close</v-btn>
+          <v-btn text color="red darken-1" @click="searchDialog = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -242,7 +246,7 @@
           <v-spacer></v-spacer>
           <div class="d-flex justify-end mt-2">
             <v-btn text color="red" @click="signInDialog = false">Cancel</v-btn>
-            <v-btn text color="green" @click="submitAuth" :disabled="!validSignIn">
+            <v-btn :loading="loading" :disabled="loading" text color="green" @click="submitAuth">
               {{ authMode === 'signIn' ? 'Sign In' : 'Sign Up' }}
             </v-btn>
           </div>
@@ -250,21 +254,37 @@
       </v-card>
     </v-dialog>
 
-
+    <!-- Snackbar -->
+    <v-snackbar color="#424242" v-model="snackbar" timeout="3000">
+      {{ snackbarText }}
+      <template v-slot:action="{ attrs }">
+        <v-btn icon small v-bind="attrs" @click="snackbar = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 
 </template>
 
 <script>
 import DishesSlider from './DishesSlider.vue'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { auth, db } from '@/firebase';
+import { v4 as uuidv4 } from "uuid";
+
 export default {
   name: 'HeaderBar',
   components: { DishesSlider },
   data() {
     return {
+      loader: null,
+      loading: false,
+      windowWidth: window.innerWidth,
       values: [],
+      snackbar: false,
+      snackbarText: '',
       elevation: 0,
       scrollY: 0,
       items: ['Pizza', 'Burger', 'Biryani', 'Salad', 'Sushi', 'Dessert', 'Drinks'],
@@ -295,6 +315,9 @@ export default {
     }
   },
   computed: {
+    isMobile() {
+      return this.windowWidth < 600;
+    },
     isAuthenticated() {
       return this.$store.getters.isAuthenticated;
     },
@@ -316,26 +339,98 @@ export default {
     }
   },
   methods: {
-    async logout() {
-      try {
-        await signOut(auth);
-        this.currentUser = null;
-        this.$store.commit('CLEAR_USER');
-        alert("Logged out successfully!");
-      } catch (error) {
-        alert(error.message);
+    async checkout() {
+      const totalAmount = this.cartTotal; // cart total from computed
+      const user = this.currentUser;
+      if (user == null) {
+        this.signInDialog = true
+        this.dialog = false
+        return
+      }
+      else {
+        const options = {
+          key: process.env.VUE_APP_RAZORPAY_KEY_ID, // ✅ from .env
+          amount: totalAmount * 100, // amount in paise
+          currency: "INR",
+          name: "Mom's Kitchen",
+          description: "Food Order Payment",
+          handler: async (response) => {
+            // ✅ Payment success
+            await this.saveOrder(response.razorpay_payment_id, totalAmount);
+          },
+          prefill: {
+            name: user?.name || "Guest User",
+            email: user?.email || "",
+            contact: user?.phone || ""
+          },
+          theme: { color: "#C59D5F" },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      }
+
+
+
+    },
+
+    async saveOrder(paymentId, totalAmount) {
+      const userId = this.currentUser?.uid || "guest";
+      const orderId = uuidv4();
+
+      const orderData = {
+        orderId,
+        userId,
+        items: this.cart.map((item) => ({
+          ...item,
+          itemOrderId: uuidv4(), // unique ID per item
+        })),
+        totalAmount,
+        paymentId,
+        status: "paid",
+        createdAt: new Date(),
+      };
+
+      // Save order in Firestore
+      await setDoc(doc(db, "orders", orderId), orderData);
+
+      this.$store.commit("CLEAR_CART"); // clear cart if you track in Vuex
+      this.dialog = false;
+      this.snackbarText = "Payment successful & order placed!";
+      this.snackbar = true;
+
+      this.$router.push("/profile"); // navigate to profile/orders
+    },
+    gotoProfile() {
+      if (this.$route.path !== '/profile') {
+        this.$router.push('/profile');
       }
     },
     async submitAuth() {
-      if (this.authMode === 'signIn') {
-        // Sign In Logic
-        if (!this.$refs.authForm.validate()) return;
+      if (!this.$refs.authForm.validate()) return;
+      this.loader = 'loading';
 
+      if (this.authMode === 'signIn') {
+        // 🔹 Sign In Logic
         try {
           const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
-          this.currentUser = userCredential.user;
-          alert(`Signed in as ${this.currentUser.email}`);
+          const authUser = userCredential.user;
+
+          const docRef = doc(db, "users", authUser.uid);
+          const docSnap = await getDoc(docRef);
+
+          let user = {};
+          if (docSnap.exists()) {
+            user = { ...authUser, ...docSnap.data() };
+          }
+
+          console.log(user);
+          this.$store.commit('SET_USER', user);
           this.signInDialog = false;
+
+          this.snackbarText = `Signed in as ${user.email}`;
+          this.snackbar = true;
+
           this.email = '';
           this.password = '';
         } catch (error) {
@@ -343,14 +438,33 @@ export default {
         }
 
       } else {
-        // Sign Up Logic
-        if (!this.$refs.authForm.validate()) return;
-
+        // 🔹 Sign Up Logic
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
-          this.currentUser = userCredential.user;
-          alert(`Account created for ${this.currentUser.email}`);
+          const authUser = userCredential.user;
+          const docRef = doc(db, "users", authUser.uid);
+
+          await setDoc(docRef, {
+            name: this.name,
+            phone: this.phone,
+            email: this.email,
+            createdAt: new Date()
+          });
+
+          const docSnap = await getDoc(docRef);
+
+          let user = {};
+          if (docSnap.exists()) {
+            user = { ...authUser, ...docSnap.data() };
+          }
+          console.log(user);
+          this.$store.commit('SET_USER', user);
           this.signInDialog = false;
+          this.snackbarText = `Signed up as ${user.email}`;
+          this.snackbar = true;
+
+          this.name = '';
+          this.phone = '';
           this.email = '';
           this.password = '';
         } catch (error) {
@@ -418,13 +532,11 @@ export default {
     addOnsTotal(item) {
       return item.add_ons?.reduce((sum, a) => sum + a.price, 0) || 0
     },
-    checkout() {
-      alert('Proceed to checkout!')
-    },
     openDialog(value) {
       if (value) {
         this.selectedItem = value
         this.searchDialog = true
+        this.values = []
       }
     },
   },
@@ -444,7 +556,14 @@ export default {
     scrollY(newVal) {
       this.elevation = newVal > 0 ? 2 : 0
     },
+    loader() {
+      const l = this.loader
+      this[l] = !this[l]
 
+      setTimeout(() => (this[l] = false), 3000)
+
+      this.loader = null
+    },
     cart: {
       handler(newCart) {
         newCart.forEach(item => {
@@ -475,6 +594,46 @@ export default {
   margin-right: 20px;
 }
 
+@-moz-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@-o-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media screen and (max-width: 500px) {
   .search_bar_header {
     display: none;
@@ -496,8 +655,9 @@ export default {
   }
 
   .signin-btn {
-    margin-left: 5px !important;
-    padding-right: 0px !important;
+    margin-left: 0px !important;
+    padding-right: 10px !important;
+    padding-left: 10px !important;
   }
 
 }

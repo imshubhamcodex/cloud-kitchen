@@ -4,22 +4,11 @@
       <HeaderBar />
 
       <!-- Search Bar -->
-      <v-row class="search-bar" align="center" justify="center">
+      <v-row class="search-bar" align="center" justify="center" v-if="!isProfilePage && !isErrorPage">
         <v-col cols="12" sm="6" md="8">
-          <v-autocomplete
-            prepend-inner-icon="mdi-magnify"
-            class="mt-6"
-            dense
-            v-model="values"
-            :items="items"
-            outlined
-            chips
-            small-chips
-            label="Search for your favorite dish.."
-            clearable
-            color="primary"
-            @change="openDialog"
-          ></v-autocomplete>
+          <v-autocomplete prepend-inner-icon="mdi-magnify" class="mt-6" dense v-model="values" :items="items" outlined
+            chips small-chips label="Search for your favorite dish.." clearable color="primary"
+            @change="openDialog"></v-autocomplete>
         </v-col>
       </v-row>
 
@@ -31,7 +20,7 @@
           <v-card-title>
             {{ selectedItem }}
             <v-spacer></v-spacer>
-            <v-btn icon @click="dialog = false">
+            <v-btn color="red accent-2" icon @click="dialog = false">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-card-title>
@@ -43,7 +32,7 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="dialog = false">Close</v-btn>
+            <v-btn text color="red accent-2" @click="dialog = false">Close</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -74,6 +63,14 @@ export default {
       }
     },
   },
+  computed: {
+    isProfilePage() {
+      return this.$route.name === 'profile';
+    },
+    isErrorPage() {
+      return this.$route.name === 'error';
+    }
+  }
 }
 </script>
 
@@ -108,6 +105,15 @@ html {
   body,
   html {
     overflow-x: hidden;
+  }
+
+  .v-dialog--active {
+    margin: 10px !important
+  }
+
+  .v-card__title {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
   }
 }
 </style>

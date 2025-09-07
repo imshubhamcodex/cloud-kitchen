@@ -10,6 +10,31 @@
                 <DishesSlider :title="'Popular Pizza'" :item="'pizza'" />
                 <br />
             </v-main>
+            <v-footer dark padless class="mt-12">
+                <v-card flat tile class="primary white--text text-center" width="100%">
+                    <v-card-text>
+                        <v-btn v-for="icon in icons" :key="icon" :class="isMobile ? 'mx-2' : 'mx-4'" class="white--text"
+                            icon>
+                            <v-icon :size="isMobile ? '20px' : '24px'">{{ icon }}</v-icon>
+                        </v-btn>
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-text class="white--text" :class="{ 'py-2': isMobile }">
+                        <strong>Mom's Kitchen</strong> — Order delicious food for pickup at your convenience
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-text class="white--text" :class="{ 'py-2': isMobile }">
+                        <div class="d-flex flex-column flex-sm-row justify-center align-center">
+                            <span>{{ new Date().getFullYear() }}</span>
+                            <strong class="ml-1">Mom's Kitchen</strong>
+                        </div>
+                    </v-card-text>
+                </v-card>
+            </v-footer>
         </div>
     </v-app>
 </template>
@@ -18,6 +43,12 @@
 import DishesSlider from '../components/DishesSlider.vue';
 export default {
     components: { DishesSlider },
+    data() {
+        return {
+            icons: ['mdi-facebook', 'mdi-twitter', 'mdi-instagram', 'mdi-linkedin'],
+            isMobile: false
+        };
+    },
     mounted() {
         const emojis = ["🍕", "🍔", "🍛", "🥗", "🍜", "🍩", "🍣"];
         const grid = document.querySelector(".emoji-grid");
@@ -33,7 +64,12 @@ export default {
                 grid.appendChild(span);
             }
         }
-    }
+    },
+    methods: {
+        checkIsMobile() {
+            this.isMobile = window.innerWidth < 600;
+        }
+    },
 };
 </script>
 

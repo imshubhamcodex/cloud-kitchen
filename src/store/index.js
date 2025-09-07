@@ -1,93 +1,195 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import biryaniImg1 from '@/assets/biryani1.png'
+import biryaniImg2 from '@/assets/biryani2.png'
+import biryaniImg3 from '@/assets/biryani3.png'
+import biryaniImg4 from '@/assets/biryani4.png'
+import biryaniImg5 from '@/assets/biryani5.png'
+import biryaniImg6 from '@/assets/biryani6.png'
+
+import pizzaImg1 from '@/assets/pizza1.png'
+import pizzaImg2 from '@/assets/pizza2.png'
+import pizzaImg3 from '@/assets/pizza3.png'
+import pizzaImg4 from '@/assets/pizza4.png'
+import pizzaImg5 from '@/assets/pizza5.png'
+import pizzaImg6 from '@/assets/pizza6.png'
+
+
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
         dishes: [
+            // Pizza Items
             {
                 id: 100,
                 name: 'Chicken Pizza',
-                img: 'https://picsum.photos/id/1015/200/120',
+                img: pizzaImg1,
                 avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
-                des: "Small plates, salads & sandwiches",
+                des: "Tender chicken with mozzarella cheese",
                 price: 150,
                 type: 'non-veg',
                 extras: [
-                    { id: 1001, name: 'Gravy', qnt: 80, price: 10, selected: false },
-                    { id: 1002, name: 'Raita', qnt: 50, price: 15, selected: false },
-                    { id: 1003, name: 'Salad', qnt: 100, price: 15, selected: false }
+                    { id: 1001, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
+                    { id: 1002, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
+                    { id: 1003, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
                 ]
             },
             {
                 id: 101,
-                name: 'Veg Biryani',
-                img: 'https://picsum.photos/id/1016/200/120',
+                name: 'Veg Pizza',
+                img: pizzaImg2,
                 avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
-                des: "Small plates, salads & sandwiches",
-                price: 110,
+                des: "Fresh vegetables with mozzarella cheese",
+                price: 130,
                 type: 'veg',
                 extras: [
-                    { id: 1011, name: 'Gravy', qnt: 80, price: 10 },
-                    { id: 1012, name: 'Raita', qnt: 50, price: 15 },
-                    { id: 1013, name: 'Salad', qnt: 100, price: 15 }
+                    { id: 1011, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
+                    { id: 1012, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
+                    { id: 1013, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
                 ]
             },
             {
                 id: 102,
-                name: 'Paneer Biryani',
-                img: 'https://picsum.photos/id/1018/200/120',
+                name: 'Paneer Pizza',
+                img: pizzaImg3,
                 avail: ['01:00PM - 02:30PM', '06:00PM - 08:00PM'],
                 des: "Rich Indian flavors with cottage cheese",
-                price: 135,
+                price: 140,
                 type: 'veg',
                 extras: [
-                    { id: 1021, name: 'Gravy', qnt: 80, price: 10 },
-                    { id: 1022, name: 'Raita', qnt: 50, price: 15 },
-                    { id: 1023, name: 'Salad', qnt: 100, price: 15 }
+                    { id: 1021, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
+                    { id: 1022, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
+                    { id: 1023, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
                 ]
             },
             {
                 id: 103,
-                name: 'Chicken Biryani',
-                img: 'https://picsum.photos/id/1015/200/120',
+                name: 'Pepperoni Pizza',
+                img: pizzaImg4,
                 avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
-                des: "Small plates, salads & sandwiches",
-                price: 150,
+                des: "Classic pepperoni with mozzarella cheese",
+                price: 160,
                 type: 'non-veg',
                 extras: [
-                    { id: 1031, name: 'Gravy', qnt: 80, price: 10 },
-                    { id: 1032, name: 'Raita', qnt: 50, price: 15 },
-                    { id: 1033, name: 'Salad', qnt: 100, price: 15 }
+                    { id: 1031, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
+                    { id: 1032, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
+                    { id: 1033, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
                 ]
             },
             {
                 id: 104,
-                name: 'Veg Pizza',
-                img: 'https://picsum.photos/id/1016/200/120',
+                name: 'Margherita Pizza',
+                img: pizzaImg5,
                 avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
-                des: "Small plates, salads & sandwiches",
-                price: 130,
+                des: "Classic tomato, mozzarella and basil",
+                price: 120,
                 type: 'veg',
                 extras: [
-                    { id: 1041, name: 'Gravy', qnt: 80, price: 10 },
-                    { id: 1042, name: 'Raita', qnt: 50, price: 15 },
-                    { id: 1043, name: 'Salad', qnt: 100, price: 15 }
+                    { id: 1041, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
+                    { id: 1042, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
+                    { id: 1043, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
                 ]
             },
             {
                 id: 105,
-                name: 'Paneer Pizza',
-                img: 'https://picsum.photos/id/1018/200/120',
+                name: 'BBQ Chicken Pizza',
+                img: pizzaImg6,
                 avail: ['01:00PM - 02:30PM', '06:00PM - 08:00PM'],
-                des: "Rich Indian flavors with cream and butter",
-                price: 110,
+                des: "Tangy BBQ sauce with grilled chicken",
+                price: 170,
+                type: 'non-veg',
+                extras: [
+                    { id: 1051, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
+                    { id: 1052, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
+                    { id: 1053, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
+                ]
+            },
+
+            // Biryani Items
+            {
+                id: 106,
+                name: 'Chicken Biryani',
+                img: biryaniImg1,
+                avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
+                des: "Aromatic basmati rice with tender chicken",
+                price: 150,
+                type: 'non-veg',
+                extras: [
+                    { id: 1061, name: 'Gravy', qnt: 80, price: 20, selected: false },
+                    { id: 1062, name: 'Raita', qnt: 50, price: 15, selected: false },
+                    { id: 1063, name: 'Salad', qnt: 100, price: 15, selected: false }
+                ]
+            },
+            {
+                id: 107,
+                name: 'Veg Biryani',
+                img: biryaniImg6,
+                avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
+                des: "Fragrant rice with mixed vegetables",
+                price: 120,
                 type: 'veg',
                 extras: [
-                    { id: 1051, name: 'Gravy', qnt: 80, price: 10 },
-                    { id: 1052, name: 'Raita', qnt: 50, price: 15 },
-                    { id: 1053, name: 'Salad', qnt: 100, price: 15 }
+                    { id: 1071, name: 'Gravy', qnt: 80, price: 20, selected: false },
+                    { id: 1072, name: 'Raita', qnt: 50, price: 15, selected: false },
+                    { id: 1073, name: 'Salad', qnt: 100, price: 15, selected: false }
+                ]
+            },
+            {
+                id: 108,
+                name: 'Paneer Biryani',
+                img: biryaniImg5,
+                avail: ['01:00PM - 02:30PM', '06:00PM - 08:00PM'],
+                des: "Aromatic rice with cottage cheese cubes",
+                price: 135,
+                type: 'veg',
+                extras: [
+                    { id: 1081, name: 'Gravy', qnt: 80, price: 20, selected: false },
+                    { id: 1082, name: 'Raita', qnt: 50, price: 15, selected: false },
+                    { id: 1083, name: 'Salad', qnt: 100, price: 15, selected: false }
+                ]
+            },
+            {
+                id: 109,
+                name: 'Mutton Biryani',
+                img: biryaniImg3,
+                avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
+                des: "Slow-cooked rice with tender mutton pieces",
+                price: 180,
+                type: 'non-veg',
+                extras: [
+                    { id: 1091, name: 'Gravy', qnt: 80, price: 20, selected: false },
+                    { id: 1092, name: 'Raita', qnt: 50, price: 15, selected: false },
+                    { id: 1093, name: 'Salad', qnt: 100, price: 15, selected: false }
+                ]
+            },
+            {
+                id: 110,
+                name: 'Hyderabadi Biryani',
+                img: biryaniImg2,
+                avail: ['12:00PM - 01:30PM', '02:00PM - 05:00PM'],
+                des: "Authentic Hyderabadi style spicy biryani",
+                price: 160,
+                type: 'non-veg',
+                extras: [
+                    { id: 1101, name: 'Gravy', qnt: 80, price: 20, selected: false },
+                    { id: 1102, name: 'Raita', qnt: 50, price: 15, selected: false },
+                    { id: 1103, name: 'Salad', qnt: 100, price: 15, selected: false }
+                ]
+            },
+            {
+                id: 111,
+                name: 'Egg Biryani',
+                img: biryaniImg4,
+                avail: ['01:00PM - 02:30PM', '06:00PM - 08:00PM'],
+                des: "Flavorful rice with steamed boiled eggs",
+                price: 130,
+                type: 'non-veg',
+                extras: [
+                    { id: 1111, name: 'Gravy', qnt: 80, price: 20, selected: false },
+                    { id: 1112, name: 'Raita', qnt: 50, price: 15, selected: false },
+                    { id: 1113, name: 'Salad', qnt: 100, price: 15, selected: false }
                 ]
             }
 
@@ -177,8 +279,9 @@ export default new Vuex.Store({
         },
         CLEAR_USER(state) {
             state.currentUser = null;
-        }
-
+            state.cart = [];
+            state.orders = [];
+        },
     },
     actions: {
         selectDish({ commit }, dish) {
@@ -186,6 +289,6 @@ export default new Vuex.Store({
         },
         addToCart({ commit }, dish) {
             commit('ADD_TO_CART', dish)
-        }
+        },
     }
 })
