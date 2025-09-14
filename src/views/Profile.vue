@@ -1,9 +1,12 @@
 <template>
   <v-container class="profile-container">
+    <!-- Order History Section -->
+    <OrderHistory class="mt-12 pt-3" :orders="orders" :loading="ordersLoading" :isMobile="isMobile" />
+
     <v-row justify="center">
       <!-- Profile + Orders -->
       <v-col cols="12" md="8" lg="8">
-        <v-card class="mt-12 pt-0 ml-0 mr-0" rounded elevation="4">
+        <v-card class="mt-12 pt-0 ml-0 mr-0 rounded-lg" rounded elevation="5">
           <v-card-title class="primary white--text" :class="{ 'py-3 px-4': isMobile }">
             <v-icon large color="white" class="mr-2">mdi-account-circle</v-icon>
             <span class="text-truncate">{{ profile.name }}</span>
@@ -58,14 +61,11 @@
           </v-card-actions>
           <v-divider />
         </v-card>
-
-        <!-- Order History Section -->
-        <OrderHistory class="mt-6" :orders="orders" :loading="ordersLoading" :isMobile="isMobile"/>
       </v-col>
     </v-row>
 
     <!-- Logout -->
-    <v-btn @click="logout" color="red" class="white--text log-out mt-4">
+    <v-btn @click="logout" color="red" class="white--text log-out mt-12">
       LOGOUT
       <v-icon class="ml-2">mdi-logout</v-icon>
     </v-btn>

@@ -14,8 +14,6 @@ import pizzaImg4 from '@/assets/pizza4.png'
 import pizzaImg5 from '@/assets/pizza5.png'
 import pizzaImg6 from '@/assets/pizza6.png'
 
-
-
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -192,7 +190,6 @@ export default new Vuex.Store({
                     { id: 1113, name: 'Salad', qnt: 100, price: 15, selected: false }
                 ]
             }
-
         ],
         add_ons: [
             { id: 200, name: 'Thums Up Can', qnt: 330, price: 60, type: 'beverage', selected: false },
@@ -204,7 +201,8 @@ export default new Vuex.Store({
         ],
         selectedDish: null,
         cart: [],
-        currentUser: null
+        currentUser: null,
+        orders: [] // keep track of past orders
     },
     getters: {
         dishes: state => state.dishes,
@@ -217,7 +215,6 @@ export default new Vuex.Store({
     mutations: {
         SET_SELECTED_DISH(state, dish) {
             state.selectedDish = dish
-            console.log('Selected dish:', dish)
         },
         TOGGLE_EXTRA(state, { dishId, extraId }) {
             const dish = state.dishes.find(d => d.id === dishId)
@@ -237,21 +234,21 @@ export default new Vuex.Store({
                 add_ons: state.add_ons
                     .filter(a => a.selected)
                     .map(a => ({ ...a, quantity: 1 })),
-                pickupMenu: false,      // for v-menu open/close
-                pickupDate: null,       // selected date
-                pickupTime: null,       // selected time
-                pickupDateTime: '',     // combined date + time for display
-                quantity: 1
-            }
-            state.cart.push(cartItem)
+                quantity: 1,
+                pickupDateTime: state.pickupDate && state.pickupTime
+                    ? new Date(`${state.pickupDate}T${state.pickupTime}:00`)
+                    : null
+            };
+            state.cart.push(cartItem);
 
-            // Reset selected flags
-            dish.extras.forEach(e => e.selected = false)
-            state.add_ons.forEach(a => a.selected = false)
-            state.selectedDish = null
+            // Reset selections
+            dish.extras.forEach(e => e.selected = false);
+            state.add_ons.forEach(a => a.selected = false);
+            state.selectedDish = null;
         },
-        REMOVE_FROM_CART(state, id) {
-            state.cart.splice(id, 1)
+
+        REMOVE_FROM_CART(state, index) {
+            state.cart.splice(index, 1)
         },
         INCREASE_EXTRA_QTY(state, { cartIndex, extraIndex }) {
             state.cart[cartIndex].extras[extraIndex].quantity++
@@ -275,12 +272,22 @@ export default new Vuex.Store({
                 state.cart[cartIndex].quantity--
         },
         SET_USER(state, user) {
-            state.currentUser = user;
+            state.currentUser = user
         },
         CLEAR_USER(state) {
-            state.currentUser = null;
-            state.cart = [];
-            state.orders = [];
+            state.currentUser = null
+            state.cart = []
+            state.orders = []
+        },
+        CLEAR_CART(state) {
+            state.cart = []
+        },
+        COMPLETE_ORDER(state) {
+            state.orders.push({
+                items: [...state.cart],
+                date: new Date()
+            })
+            state.cart = []
         },
     },
     actions: {
@@ -289,6 +296,9 @@ export default new Vuex.Store({
         },
         addToCart({ commit }, dish) {
             commit('ADD_TO_CART', dish)
+        },
+        completeOrder({ commit }) {
+            commit('COMPLETE_ORDER')
         },
     }
 })

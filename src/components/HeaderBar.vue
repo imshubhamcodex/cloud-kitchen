@@ -135,42 +135,39 @@
                     </div>
                   </v-list>
                 </div>
-
-                <!-- Pickup Date & Time -->
-                <div class="d-flex align-center mb-4 justify-space-between pl-10">
-                  <strong class="mr-3">Pickup Date & Time:</strong>
-                  <v-menu v-model="item.pickupMenu" :close-on-content-click="false" transition="scale-transition"
-                    offset-y min-width="250px">
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-text-field dense outlined class="mt-4" v-model="item.pickupDateTime" label="Select Date & Time"
-                        readonly v-bind="attrs" v-on="on" style="max-width: 160px;"></v-text-field>
-                    </template>
-
-                    <v-card style="zoom: 0.8;">
-                      <!-- Date Picker -->
-                      <v-date-picker v-model="item.pickupDate" :min="minDate" no-title scrollable></v-date-picker>
-
-                      <!-- Time Picker -->
-                      <v-time-picker v-model="item.pickupTime" format="24hr"
-                        :allowed-hours="hour => allowedHours(hour, item)"
-                        :allowed-minutes="minute => allowedMinutes(minute, item)" />
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn text color="primary" @click="item.pickupMenu = false">OK</v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-menu>
-                </div>
-
-
                 <div>
                   <v-divider class="mt-5"></v-divider>
                 </div>
               </v-list-item-content>
             </v-list-item>
-
           </v-list>
+
+          <!-- GLOBAL Pickup Date & Time (one per checkout) -->
+          <div class="d-flex align-center mb-4 justify-space-between pl-5 pr-5">
+            <strong class="mr-3">Pickup Date & Time:</strong>
+            <v-menu v-model="pickupMenu" :close-on-content-click="false" transition="scale-transition" offset-y
+              min-width="250px">
+              <template v-slot:activator="{ on, attrs }">
+                <!-- use :value to display computed string -->
+                <v-text-field dense outlined class="mt-4" :value="pickupDateTime" label="Select Date & Time" readonly
+                  v-bind="attrs" v-on="on" style="max-width: 220px;"></v-text-field>
+              </template>
+
+              <v-card style="zoom: 0.8;">
+                <!-- Date Picker -->
+                <v-date-picker v-model="pickupDate" :min="minDate" no-title scrollable></v-date-picker>
+
+                <!-- Time Picker -->
+                <v-time-picker v-model="pickupTime" format="24hr" :allowed-hours="hour => allowedHours(hour)"
+                  :allowed-minutes="minute => allowedMinutes(minute)" />
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn text color="primary" @click="pickupMenu = false">OK</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-menu>
+          </div>
 
           <div class="mt-0 d-flex justify-space-between align-center">
             <strong style="color: black; font-size: 18px;" class="total_price">Total: ₹ {{ cartTotal }}</strong>
@@ -218,20 +215,19 @@
         </v-card-title>
 
         <v-card-text class="pt-5">
-          <v-form ref="authForm" v-model="validSignIn">
-            <!-- Name & Phone Only in Sign Up Mode -->
+          <v-form ref="authForm" v-model="isFormValid">
             <v-text-field v-if="authMode === 'signUp'" v-model="name" label="Full Name" :rules="[signInRules.required]"
-              required outlined dense clearable></v-text-field>
+              required outlined dense clearable />
 
             <v-text-field v-if="authMode === 'signUp'" v-model="phone" label="Phone Number" type="tel"
-              :rules="signInRules.phoneRule" required outlined dense clearable></v-text-field>
+              :rules="[signInRules.phoneRule, signInRules.required]" required outlined dense clearable />
 
             <v-text-field v-model="email" label="Email" type="email" :rules="[signInRules.required, signInRules.email]"
-              required outlined dense clearable></v-text-field>
+              required outlined dense clearable />
 
             <v-text-field v-model="password" label="Password" :type="showPassword ? 'text' : 'password'"
               :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'" @click:append="showPassword = !showPassword"
-              :rules="[signInRules.required, signInRules.min]" required outlined dense clearable></v-text-field>
+              :rules="[signInRules.required, signInRules.min]" required outlined dense clearable />
           </v-form>
 
           <div class="mt-2">
@@ -245,8 +241,11 @@
 
           <v-spacer></v-spacer>
           <div class="d-flex justify-end mt-2">
-            <v-btn text color="red" @click="signInDialog = false">Cancel</v-btn>
-            <v-btn :loading="loading" :disabled="loading" text color="green" @click="submitAuth">
+            <v-btn text color="red" @click="signInDialog = false">
+              Cancel
+            </v-btn>
+
+            <v-btn :loading="loading" :disabled="loading || !isFormValid" text color="green" @click="submitAuth">
               {{ authMode === 'signIn' ? 'Sign In' : 'Sign Up' }}
             </v-btn>
           </div>
@@ -255,7 +254,7 @@
     </v-dialog>
 
     <!-- Snackbar -->
-    <v-snackbar color="#424242" v-model="snackbar" timeout="3000">
+    <v-snackbar color="#424242" v-model="snackbar" timeout="4000">
       {{ snackbarText }}
       <template v-slot:action="{ attrs }">
         <v-btn icon small v-bind="attrs" @click="snackbar = false">
@@ -266,7 +265,6 @@
   </div>
 
 </template>
-
 <script>
 import DishesSlider from './DishesSlider.vue'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -281,6 +279,7 @@ export default {
     return {
       loader: null,
       loading: false,
+      isFormValid: false,
       windowWidth: window.innerWidth,
       values: [],
       snackbar: false,
@@ -301,17 +300,22 @@ export default {
       showPassword: false,
       authMode: 'signIn', // or 'signUp'
       signInRules: {
-        required: value => !!value || 'Required.',
-        email: value => {
-          const pattern = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/
-          return pattern.test(value) || 'Invalid e-mail.'
+        required: v => !!v || 'Required.',
+        email: v => {
+          const pattern = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/;
+          return pattern.test(v) || 'Invalid e-mail.';
         },
-        min: value => (value && value.length >= 6) || 'Min 6 characters',
-        phoneRule: [
-          v => !!v || 'Phone number is required.',
-          v => /^[6-9]\d{9}$/.test(v) || 'Enter a valid 10-digit Indian phone number starting with 6-9.'
-        ]
+        min: v => (v && v.length >= 6) || 'Min 6 characters',
+        phoneRule: v => {
+          if (!v) return 'Phone number is required.';
+          return /^[6-9]\d{9}$/.test(v) || 'Enter a valid 10-digit Indian phone number starting with 6-9.';
+        }
       },
+
+      // === NEW: global pickup fields (one per checkout) ===
+      pickupMenu: false,
+      pickupDate: null,   // yyyy-mm-dd
+      pickupTime: null,   // 'HH:mm'
     }
   },
   computed: {
@@ -334,14 +338,27 @@ export default {
         return total + (item.price * item.quantity) + extrasTotal + addOnsTotal
       }, 0)
     },
+    // computed readable pickup string
+    pickupDateTime() {
+      return (this.pickupDate && this.pickupTime) ? `${this.pickupDate} ${this.pickupTime}` : ''
+    },
+    // we require a single pickup date/time for checkout
     allPickupSelected() {
-      return this.cart.every(item => item.pickupTime)
+      return !!(this.pickupDate && this.pickupTime)
     }
   },
   methods: {
     async checkout() {
       const totalAmount = this.cartTotal; // cart total from computed
       const user = this.currentUser;
+
+      // validate pickup selected
+      if (!this.pickupDate || !this.pickupTime) {
+        this.snackbarText = "Please select pickup date & time before checkout.";
+        this.snackbar = true;
+        return;
+      }
+
       if (user == null) {
         this.signInDialog = true
         this.dialog = false
@@ -349,13 +366,13 @@ export default {
       }
       else {
         const options = {
-          key: process.env.VUE_APP_RAZORPAY_KEY_ID, // ✅ from .env
+          key: process.env.VUE_APP_RAZORPAY_KEY_ID, // from .env
           amount: totalAmount * 100, // amount in paise
           currency: "INR",
           name: "Mom's Kitchen",
           description: "Food Order Payment",
           handler: async (response) => {
-            // ✅ Payment success
+            // Payment success
             await this.saveOrder(response.razorpay_payment_id, totalAmount);
           },
           prefill: {
@@ -369,14 +386,14 @@ export default {
         const rzp = new window.Razorpay(options);
         rzp.open();
       }
-
-
-
     },
 
     async saveOrder(paymentId, totalAmount) {
       const userId = this.currentUser?.uid || "guest";
       const orderId = uuidv4();
+      const pickupDateTime = this.pickupDate && this.pickupTime
+        ? new Date(`${this.pickupDate}T${this.pickupTime}:00`)
+        : null;
 
       const orderData = {
         orderId,
@@ -389,6 +406,8 @@ export default {
         paymentId,
         status: "paid",
         createdAt: new Date(),
+        pickupDateTime,
+        deliveryCode: Math.floor(1000 + Math.random() * 9000), // 4-digit code
       };
 
       // Save order in Firestore
@@ -399,13 +418,19 @@ export default {
       this.snackbarText = "Payment successful & order placed!";
       this.snackbar = true;
 
-      this.$router.push("/profile"); // navigate to profile/orders
+      // reset pickup fields for next order
+      this.pickupDate = null;
+      this.pickupTime = null;
+
+      if(this.$route.name != 'profile') this.$router.push("/profile");
     },
+
     gotoProfile() {
       if (this.$route.path !== '/profile') {
         this.$router.push('/profile');
       }
     },
+
     async submitAuth() {
       if (!this.$refs.authForm.validate()) return;
       this.loader = 'loading';
@@ -475,30 +500,36 @@ export default {
     toggleAuthMode() {
       this.authMode = this.authMode === 'signIn' ? 'signUp' : 'signIn';
     },
-    allowedHours(hour, item) {
+
+    // allowed hours and minutes now use the global pickupDate/pickupTime
+    allowedHours(hour) {
       const now = new Date();
-      const selectedDate = new Date(item.pickupDate);
+      const selectedDate = this.pickupDate ? new Date(this.pickupDate) : null;
       let minHour = 12;
 
-      if (selectedDate.toDateString() === now.toDateString()) {
+      if (selectedDate && selectedDate.toDateString() === now.toDateString()) {
         minHour = now.getHours() + 1;
         if (minHour < 12) minHour = 12;
       }
 
       return hour >= minHour && hour <= 20; // max 8 PM
     },
-    allowedMinutes(minute, item) {
+    allowedMinutes(minute) {
       const now = new Date();
-      const selectedDate = new Date(item.pickupDate);
+      const selectedDate = this.pickupDate ? new Date(this.pickupDate) : null;
 
       if (
-        selectedDate.toDateString() === now.toDateString() &&
-        parseInt(item.pickupTime?.split(':')[0]) === now.getHours() + 1
+        selectedDate &&
+        selectedDate.toDateString() === now.toDateString()
       ) {
-        return minute >= now.getMinutes();
+        const selectedHour = parseInt(this.pickupTime?.split(':')[0]);
+        if (selectedHour === now.getHours() + 1) {
+          return minute >= now.getMinutes();
+        }
       }
       return true;
     },
+
     truncate(text) {
       if (window.innerWidth <= 500) {
         if (window.innerWidth <= 400) {
@@ -560,23 +591,14 @@ export default {
       const l = this.loader
       this[l] = !this[l]
 
-      setTimeout(() => (this[l] = false), 3000)
+      setTimeout(() => (this[l] = false), 4000)
 
       this.loader = null
     },
-    cart: {
-      handler(newCart) {
-        newCart.forEach(item => {
-          if (item.pickupDate && item.pickupTime) {
-            item.pickupDateTime = `${item.pickupDate} ${item.pickupTime}`
-          }
-        })
-      },
-      deep: true
-    }
   }
 }
 </script>
+
 
 <style scoped>
 .vertical-line {

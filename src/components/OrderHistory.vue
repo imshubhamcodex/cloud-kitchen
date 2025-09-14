@@ -9,7 +9,7 @@
 
       <v-card-text class="pa-0">
         <!-- Loading State -->
-        <v-skeleton-loader v-if="loading" type="table"></v-skeleton-loader>
+        <v-skeleton-loader v-if="loading" type="table" />
 
         <!-- No Orders -->
         <div v-else-if="orders.length === 0" class="pa-6 text-center">
@@ -26,20 +26,25 @@
           <v-expansion-panel v-for="order in orders" :key="order.id">
             <!-- Header -->
             <v-expansion-panel-header>
-              <div class="d-flex align-center flex-wrap justify-space-between">
+              <div class="d-flex align-center flex-wrap justify-space-between w-100">
                 <div :class="{ 'mb-2': isMobile }">
                   <strong>Order ID# {{ order.id.substring(0, 8) }}</strong>
-                  <div class="text-caption grey--text">{{ formatDate(order.createdAt?.toDate()) }}</div>
+                  <div class="text-caption grey--text">
+                    {{ formatDate(order.createdAt?.toDate?.() || order.createdAt) }}
+                  </div>
+                  <!-- Delivery Code -->
+                  <div class="text-subtitle-2 font-weight-medium mt-1">
+                    Delivery Code: <span class="primary--text">{{ order.deliveryCode }}</span>
+                  </div>
                 </div>
-                <div>
-                  <v-chip small :color="getStatusColor(order.status)" text-color="white"
-                    :class="{ 'mr-5 mb-1': !isMobile, 'mr-0 mb-1 ml-12': isMobile }">
-                    {{ order.status }}
+                <div class="pl-7">
+                  <v-chip small :color="getStatusColor(order.status)" text-color="white" class="mr-3">
+                    {{ order.status.toUpperCase() }} ₹{{ calculateOrderTotal(order) }}
                   </v-chip>
 
-                  <strong :class="{ 'mr-5': !isMobile, 'mr-0 ml-4 mb-2': isMobile }">
-                    ₹{{ calculateOrderTotal(order) }}
-                  </strong>
+                  <v-btn color="primary" fab x-small dark @click.stop="reorderItems(order)">
+                    <v-icon>mdi-refresh</v-icon>
+                  </v-btn>
                 </div>
               </div>
             </v-expansion-panel-header>
@@ -47,12 +52,14 @@
             <!-- Content -->
             <v-expansion-panel-content>
               <v-list dense>
-                <v-list-item v-for="item in order.items" :key="item.id"
+                <v-list-item v-for="item in order.items" :key="item.itemOrderId || item.id"
                   class="flex-column flex-sm-row align-start align-sm-center">
                   <div class="d-flex align-center w-100 flex-wrap">
                     <v-list-item-avatar :class="{ 'mr-3': !isMobile }">
                       <v-avatar size="40" color="grey lighten-3">
-                        <v-icon>{{ item.type === 'veg' ? 'mdi-food-apple' : 'mdi-food' }}</v-icon>
+                        <v-icon>
+                          {{ item.type === 'veg' ? 'mdi-food-apple' : 'mdi-food' }}
+                        </v-icon>
                       </v-avatar>
                     </v-list-item-avatar>
 
@@ -61,7 +68,9 @@
                         <v-list-item-title class="font-weight-medium">
                           {{ item.name }} x{{ item.quantity }}
                         </v-list-item-title>
-                        <span class="font-weight-medium">₹{{ item.price * item.quantity }}</span>
+                        <span class="font-weight-medium">
+                          ₹{{ item.price * item.quantity }}
+                        </span>
                       </div>
 
                       <v-list-item-subtitle
@@ -84,21 +93,19 @@
                       </v-list-item-subtitle>
                     </v-list-item-content>
                   </div>
-
-                  <div class="mt-5" v-if="isMobile">
-                    <div class="text-subtitle-2 font-weight-medium">Pickup Time: </div>
-                    <div class="text-subtitle-2">
-                      <span> {{ formatPickupTime(item.pickupDateTime) }}</span>
-                    </div>
-                  </div>
-                  <div class="ml-5" v-else>
-                    <div class="text-subtitle-2 font-weight-medium">Pickup Time: </div>
-                    <div class="text-subtitle-2">
-                      <span> {{ formatPickupTime(item.pickupDateTime) }}</span>
-                    </div>
-                  </div>
                 </v-list-item>
               </v-list>
+              <!-- Pickup DateTime -->
+              <div class="mt-0" v-if="isMobile">
+                <div class="text-subtitle-2 font-weight-medium">Pickup Time: <span class="ml-12">{{
+                  formatPickupTime(order.pickupDateTime) }}</span></div>
+              </div>
+              <div v-else class="ml-5 mt-5">
+                <div class="text-subtitle-2 font-weight-medium">Pickup Time:</div>
+                <div class="text-subtitle-2">
+                  <span>{{ formatPickupTime(order.pickupDateTime) }}</span>
+                </div>
+              </div>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -130,7 +137,7 @@ export default {
     },
     formatDate(date) {
       if (!date) return '';
-      return date.toLocaleString('en-US', {
+      return new Date(date).toLocaleString('en-US', {
         hour: 'numeric',
         minute: 'numeric',
         hour12: true,
@@ -139,33 +146,32 @@ export default {
         year: 'numeric'
       });
     },
-
     getStatusColor(status) {
       const colors = {
-        'pending': 'orange',
-        'confirmed': 'green',
-        'ready': 'blue',
-        'completed': 'indigo',
-        'cancelled': 'red',
-        'rejected': 'red',
-        'paid': 'green'
+        completed: 'indigo',
+        cancelled: 'red',
+        paid: 'green'
       };
       return colors[status] || 'grey';
     },
-
     calculateOrderTotal(order) {
-      let total = 0;
-      order.items.forEach(item => {
-        total += item.price * item.quantity;
-        if (item.extras) item.extras.forEach(e => total += e.price * e.quantity);
-        if (item.add_ons) item.add_ons.forEach(a => total += a.price * a.quantity);
-      });
-      return total;
+      return order.items.reduce((total, item) => {
+        let itemTotal = item.price * item.quantity;
+        if (item.extras) item.extras.forEach(e => (itemTotal += e.price * e.quantity));
+        if (item.add_ons) item.add_ons.forEach(a => (itemTotal += a.price * a.quantity));
+        return total + itemTotal;
+      }, 0);
     },
-
     reorderItems(order) {
       order.items.forEach(item => {
-        const cartItem = { ...item };
+        const cartItem = {
+          ...item,
+          extras: item.extras ? item.extras.map(e => ({ ...e })) : [],
+          add_ons: item.add_ons ? item.add_ons.map(a => ({ ...a })) : [],
+          pickupMenu: false,
+          pickupDateTime: item.pickupDateTime || order.pickupDateTime || '',
+          quantity: item.quantity || 1
+        };
         this.$store.commit('ADD_TO_CART', cartItem);
       });
       this.$router.push('/');
@@ -179,7 +185,6 @@ export default {
   width: 100%;
 }
 
-/* Mobile adjustments */
 @media (max-width: 600px) {
   .v-expansion-panel-header {
     flex-direction: column !important;

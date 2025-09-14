@@ -1,7 +1,9 @@
 <template>
   <v-app id="app">
     <v-main>
-      <HeaderBar />
+      <HeaderBar style="z-index:9999;" />
+      <HeroCard class="mt-12 pt-5 mb-5" v-if="isMobile && !isProfilePage" />
+
 
       <!-- Search Bar -->
       <v-row class="search-bar" align="center" justify="center" v-if="!isProfilePage && !isErrorPage">
@@ -43,14 +45,16 @@
 <script>
 import HeaderBar from './components/HeaderBar.vue'
 import DishesSlider from './components/DishesSlider.vue';
+import HeroCard from './components/HeroCard.vue';
 
 export default {
   name: 'App',
-  components: { HeaderBar, DishesSlider },
+  components: { HeaderBar, DishesSlider, HeroCard },
   data() {
     return {
       values: null,
-      items: ['Pizza', 'Biryani', 'Pasta', 'Burger', 'Salad', 'Dessert', 'Beverages'],
+      windowWidth: window.innerWidth,
+      items: ['Pizza', 'Biryani',],
       dialog: false,
       selectedItem: null,
     }
@@ -69,6 +73,9 @@ export default {
     },
     isErrorPage() {
       return this.$route.name === 'error';
+    },
+    isMobile() {
+      return this.windowWidth < 600;
     }
   }
 }
@@ -93,7 +100,7 @@ html {
 
 @media (max-width: 500px) {
   .search-bar {
-    margin-top: 65px !important;
+    /* margin-top: 65px !important; */
     padding-left: 15px;
     padding-right: 15px;
   }

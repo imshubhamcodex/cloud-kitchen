@@ -97,7 +97,7 @@ export default {
     /* allow clicks through emojis */
     z-index: 0;
     /* behind content */
-    opacity: 0.05;
+    opacity: 0.07;
 }
 
 .emoji {
