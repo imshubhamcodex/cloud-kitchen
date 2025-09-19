@@ -98,6 +98,13 @@ html {
   margin-top: 0;
 }
 
+.v-dialog--active{
+    margin-top: 50px !important;
+}
+
+
+
+
 @media (max-width: 500px) {
   .search-bar {
     /* margin-top: 65px !important; */

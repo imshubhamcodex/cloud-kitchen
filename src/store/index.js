@@ -30,8 +30,7 @@ export default new Vuex.Store({
                 type: 'non-veg',
                 extras: [
                     { id: 1001, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
-                    { id: 1002, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
-                    { id: 1003, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
+                    { id: 1002, name: 'Mushrooms', qnt: 50, price: 25, selected: false }
                 ]
             },
             {
@@ -44,8 +43,7 @@ export default new Vuex.Store({
                 type: 'veg',
                 extras: [
                     { id: 1011, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
-                    { id: 1012, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
-                    { id: 1013, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
+                    { id: 1012, name: 'Mushrooms', qnt: 50, price: 25, selected: false }
                 ]
             },
             {
@@ -58,8 +56,7 @@ export default new Vuex.Store({
                 type: 'veg',
                 extras: [
                     { id: 1021, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
-                    { id: 1022, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
-                    { id: 1023, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
+                    { id: 1022, name: 'Mushrooms', qnt: 50, price: 25, selected: false }
                 ]
             },
             {
@@ -72,8 +69,7 @@ export default new Vuex.Store({
                 type: 'non-veg',
                 extras: [
                     { id: 1031, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
-                    { id: 1032, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
-                    { id: 1033, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
+                    { id: 1032, name: 'Mushrooms', qnt: 50, price: 25, selected: false }
                 ]
             },
             {
@@ -86,8 +82,7 @@ export default new Vuex.Store({
                 type: 'veg',
                 extras: [
                     { id: 1041, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
-                    { id: 1042, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
-                    { id: 1043, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
+                    { id: 1042, name: 'Mushrooms', qnt: 50, price: 25, selected: false }
                 ]
             },
             {
@@ -100,8 +95,7 @@ export default new Vuex.Store({
                 type: 'non-veg',
                 extras: [
                     { id: 1051, name: 'Extra Cheese', qnt: 50, price: 30, selected: false },
-                    { id: 1052, name: 'Mushrooms', qnt: 50, price: 25, selected: false },
-                    { id: 1053, name: 'Jalapeños', qnt: 30, price: 15, selected: false }
+                    { id: 1052, name: 'Mushrooms', qnt: 50, price: 25, selected: false }
                 ]
             },
 
@@ -194,10 +188,9 @@ export default new Vuex.Store({
         add_ons: [
             { id: 200, name: 'Thums Up Can', qnt: 330, price: 60, type: 'beverage', selected: false },
             { id: 201, name: 'Masala Lemonade', qnt: 180, price: 30, type: 'beverage', selected: false },
-            { id: 202, name: 'Ayran (Buttermilk)', qnt: 200, price: 60, type: 'beverage', selected: false },
-            { id: 203, name: 'Coca-Cola Bottle', qnt: 475, price: 60, type: 'beverage', selected: false },
-            { id: 204, name: 'Gulab Jamun', qnt: 2, price: 50, type: 'dessert', selected: false },
-            { id: 205, name: 'Water Bottle (1L)', qnt: 1000, price: 20, type: 'beverage', selected: false }
+            { id: 203, name: 'Gulab Jamun', qnt: 2, price: 50, type: 'dessert', selected: false },
+            { id: 204, name: 'Mojito', qnt: 300, price: 80, type: 'beverage', selected: false },
+            { id: 205, name: 'Water Bottle (1L)', qnt: 1000, price: 20, type: 'beverage', selected: false },
         ],
         selectedDish: null,
         cart: [],
